@@ -1,5 +1,5 @@
 var redis = require("redis"),
-    client = redis.createClient();
+    client = redis.createClient(process.env.REDISCLOUD_URL || 'redis://');
 const validator = require('validator')
 
 function getRedisKey(k) {
