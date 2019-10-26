@@ -1,7 +1,7 @@
 const express = require('express')
 const app = express()
 const basicAuth = require('express-basic-auth')
-const port = 3000
+const port = process.env.PORT || 3000
 
 const { getShortlink, setShortlink } = require('./shortener.js')
 
