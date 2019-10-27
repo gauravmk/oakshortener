@@ -20,7 +20,7 @@ function logPageView(req) {
     const options = {
       uri: 'https://www.google-analytics.com/collect', 
       method: 'POST',
-      json: payload,
+      form: payload,
     }
 
     request(options, (err, response, body) => {
