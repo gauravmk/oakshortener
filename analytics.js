@@ -2,8 +2,6 @@ const request = require('request');
 const requestIp = require('request-ip');
 const uuidv4 = require('uuid/v4');
 
-request.debug = true
-
 function logPageView(req) {
   return new Promise(resolve => {
     const payload = {
@@ -23,10 +21,7 @@ function logPageView(req) {
       form: payload,
     }
 
-    request(options, (err, response, body) => {
-      console.log(body)
-      resolve()
-    });
+    request(options, resolve);
   });
 }
 

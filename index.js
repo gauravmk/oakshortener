@@ -1,33 +1,35 @@
 const express = require('express')
 const app = express()
-const basicAuth = require('express-basic-auth')
 const port = process.env.PORT || 3000
 
 const { getShortlink, setShortlink } = require('./shortener.js')
 const { logPageView } = require('./analytics.js')
 
-// Handle creating new links. Use basic auth. This overwrites existing links
-const ADMIN_PASS = process.env.ADMIN_PASS || 'password'
-app.use(express.json())
-app.post('/create', basicAuth({ users: { 'admin': ADMIN_PASS } }), async (req, res, next) => {
-  const { key, value } = req.body;
+const basicAuth = require('express-basic-auth')
+const authMiddleware = basicAuth({ users: { 'admin': process.env.ADMIN_PASS || 'password' } })
+
+app.post('/create', express.json(), authMiddleware, async (req, res, next) => {
   try {
+    const { key, value } = req.body;
     await setShortlink(key, value);
+    res.send('Successfully set ' + key);
   } catch (err) {
-    next(err.message)
+    next(err)
   }
-  res.send('Successfully set ' + key);
 });
 
-// Get link. Either redirects or returns a Not Found if it's a bad link
 app.get('/:slug', async (req, res, next) => {
   try {
     const val = await getShortlink(req.params.slug)
     val ? res.redirect(val) : res.send("Not found");
     await logPageView(req)
   } catch (err) {
-    next(err.message)
+    next(err)
   }
 });
 
-app.listen(port, () => console.log(`Example app listening on port ${port}!`))
+app.use((err, req, res, next) => {
+  res.status(500).send(err.message)
+})
+
+app.listen(port, () => console.log(`Shortener listening on port ${port}!`))

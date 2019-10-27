@@ -1,5 +1,4 @@
-var redis = require("redis"),
-    client = redis.createClient(process.env.REDISCLOUD_URL || 'redis://');
+const client = require("redis").createClient(process.env.REDISCLOUD_URL || 'redis://');
 const validator = require('validator')
 
 function getRedisKey(k) {
@@ -20,9 +19,10 @@ function setShortlink(key, value) {
 
 function getShortlink(key) {
   return new Promise(resolve => {
-    client.get(getRedisKey(key), (err, val) => {
-      resolve(val)
-    });
+    if (!key) {
+      throw Error('Must provide key')
+    }
+    client.get(getRedisKey(key), (err, val) => { resolve(val) });
   });
 }
 
