@@ -1,4 +1,5 @@
 const request = require('request');
+const requestIp = require('request-ip');
 const uuidv4 = require('uuid/v4');
 
 request.debug = true
@@ -9,7 +10,7 @@ function logPageView(req) {
       v: 1,
       tid: process.env.GOOGLE_TRACKING_ID,
       cid: uuidv4(),
-      uip: req.ip,
+      uip: requestIp.getClientIp(req),
       ua: req.headers['user-agent'],
       t: 'pageview',
       dh: req.get('host'),
