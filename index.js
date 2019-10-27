@@ -4,6 +4,7 @@ const basicAuth = require('express-basic-auth')
 const port = process.env.PORT || 3000
 
 const { getShortlink, setShortlink } = require('./shortener.js')
+const { logPageView } = require('./analytics.js')
 
 // Handle creating new links. Use basic auth. This overwrites existing links
 const ADMIN_PASS = process.env.ADMIN_PASS || 'password'
@@ -23,6 +24,7 @@ app.get('/:slug', async (req, res, next) => {
   try {
     const val = await getShortlink(req.params.slug)
     val ? res.redirect(val) : res.send("Not found");
+    await logPageView(req)
   } catch (err) {
     next(err.message)
   }
