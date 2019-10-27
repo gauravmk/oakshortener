@@ -18,6 +18,11 @@ app.post('/create', express.json(), authMiddleware, async (req, res, next) => {
   }
 });
 
+app.get('/', (req, res, next) => {
+  res.redirect('https://oaklandca.gov')
+  await logPageView(req)
+});
+
 app.get('/:slug', async (req, res, next) => {
   try {
     const val = await getShortlink(req.params.slug)
