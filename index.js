@@ -18,7 +18,7 @@ app.post('/create', express.json(), authMiddleware, async (req, res, next) => {
   }
 });
 
-app.get('/', (req, res, next) => {
+app.get('/', async (req, res, next) => {
   res.redirect('https://oaklandca.gov')
   await logPageView(req)
 });
