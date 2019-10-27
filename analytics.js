@@ -1,10 +1,14 @@
 const request = require('request');
+const uuidv4 = require('uuid/v4');
+
+request.debug = true
 
 function logPageView(req) {
   return new Promise(resolve => {
     const payload = {
       v: 1,
       tid: process.env.GOOGLE_TRACKING_ID,
+      cid: uuidv4(),
       uip: req.ip,
       ua: req.headers['user-agent'],
       t: 'pageview',
@@ -19,7 +23,7 @@ function logPageView(req) {
     }
 
     request(options, (err, response, body) => {
-      console.log("Recv code: " + response.statusCode);
+      console.log(body)
       resolve()
     });
   });
