@@ -1,40 +1,54 @@
-const express = require('express')
-const app = express()
-const port = process.env.PORT || 3000
+const express = require("express");
+const app = express();
+const port = process.env.PORT || 3000;
 
-const { getShortlink, setShortlink } = require('./shortener.js')
-const { logPageView } = require('./analytics.js')
+const { client, getShortlink, setShortlink } = require("./shortener.js");
+const { logPageView } = require("./analytics.js");
 
-const basicAuth = require('express-basic-auth')
-const authMiddleware = basicAuth({ users: { 'admin': process.env.ADMIN_PASS || 'password' } })
+const { promisify } = require("util");
+const smembersAsync = promisify(client.smembers).bind(client);
 
-app.post('/create', express.json(), authMiddleware, async (req, res, next) => {
+app.use(express.urlencoded({ extended: true }));
+
+app.post("/slack/set", async (req, res, next) => {
   try {
-    const { key, value } = req.body;
+    if (req.body.token !== process.env.SLACK_TOKEN) {
+      res.send("Unauthorized request");
+    }
+
+    // Only allow whitelisted user
+    const admins = await smembersAsync("adminusers");
+
+    if (!admins.includes(req.body.user_id)) {
+      res.send("Unauthorized. Talk to gaurav about getting access");
+    }
+
+    const [key, value] = req.body.text.split(" ");
     await setShortlink(key, value);
-    res.send('Successfully set ' + key);
+    res.send(`Successfully set http://oakca.us/${key}`);
   } catch (err) {
-    next(err)
+    res.send(`Shortlink failed: ${err.message}`);
+    next(err);
   }
 });
 
-app.get('/', async (req, res, next) => {
-  res.redirect('https://oaklandca.gov')
-  await logPageView(req)
+app.get("/", async (req, res, next) => {
+  res.redirect("https://oaklandca.gov");
+  await logPageView(req);
 });
 
-app.get('/:slug', async (req, res, next) => {
+app.get("/:slug", async (req, res, next) => {
   try {
-    const val = await getShortlink(req.params.slug)
+    const val = await getShortlink(req.params.slug);
     val ? res.redirect(val) : res.send("Not found");
-    await logPageView(req)
+    await logPageView(req);
   } catch (err) {
-    next(err)
+    next(err);
   }
 });
 
 app.use((err, req, res, next) => {
-  res.status(500).send(err.message)
-})
+  res.status(500).send(err.message);
+});
 
-app.listen(port, () => console.log(`Shortener listening on port ${port}!`))
+app.listen(port, () => console.log(`Shortener listening on port ${port}!`));

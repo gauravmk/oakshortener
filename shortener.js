@@ -1,32 +1,35 @@
-const client = require("redis").createClient(process.env.REDISCLOUD_URL || 'redis://');
-const validator = require('validator')
+const client = require("redis").createClient(process.env.REDISCLOUD_URL || "redis://");
+const validator = require("validator");
 
 function getRedisKey(k) {
-  return `oakshortener:${k}`
+  return `oakshortener:${k}`;
 }
 
 function setShortlink(key, value) {
   return new Promise(resolve => {
     if (!key || !value) {
-      throw Error('Must provide both key and value')
+      throw Error("Must provide both key and value");
     }
     if (!validator.isURL(value)) {
-      throw Error('Value must be a URL')
+      throw Error("Value must be a URL");
     }
-    client.set(getRedisKey(key), value, resolve)
+    client.set(getRedisKey(key), value, resolve);
   });
-};
+}
 
 function getShortlink(key) {
   return new Promise(resolve => {
     if (!key) {
-      throw Error('Must provide key')
+      throw Error("Must provide key");
     }
-    client.get(getRedisKey(key), (err, val) => { resolve(val) });
+    client.get(getRedisKey(key), (err, val) => {
+      resolve(val);
+    });
   });
 }
 
 module.exports = {
+  client,
   getShortlink,
-  setShortlink,
-}
+  setShortlink
+};
