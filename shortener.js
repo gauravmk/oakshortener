@@ -10,8 +10,8 @@ function setShortlink(key, value) {
     if (!key || !value) {
       throw Error("Must provide both key and value");
     }
-    if (!validator.isURL(value)) {
-      throw Error("Value must be a URL");
+    if (!validator.isURL(value, { require_protocol: true })) {
+      throw Error("Value must be a valid URL with the protocol (http/https)");
     }
     client.set(getRedisKey(key), value, resolve);
   });
